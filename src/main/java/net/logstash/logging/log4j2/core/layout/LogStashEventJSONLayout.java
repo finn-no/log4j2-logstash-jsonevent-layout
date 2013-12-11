@@ -121,7 +121,6 @@ public class LogStashEventJSONLayout extends AbstractStringLayout {
         logStashEventBuilder.setSource(StringUtils.join(type,DELIM,hostName,DELIM,applicationName));
 
         logStashEventBuilder.addField("source_address", localAddress);
-        logStashEventBuilder.addField("source_application", applicationName);
     }
 
     protected String getLogStashType() {
@@ -136,7 +135,6 @@ public class LogStashEventJSONLayout extends AbstractStringLayout {
             logStashEventBuilder.addField("level", event.getLevel());
             logStashEventBuilder.addField("level_value", event.getLevel().intLevel());
         }
-        logStashEventBuilder.addField("logger_fqcn", event.getFQCN());
 
         StackTraceElement stackTrace = event.getSource();
         if (null != stackTrace) {
@@ -166,7 +164,7 @@ public class LogStashEventJSONLayout extends AbstractStringLayout {
 
         ContextStack nestedDiagnosticContext = event.getContextStack();
         if (null != nestedDiagnosticContext && null != nestedDiagnosticContext.asList()) {
-            logStashEventBuilder.addField("nested_diagnostic_context", nestedDiagnosticContext.asList());
+            logStashEventBuilder.addField("ndc", nestedDiagnosticContext.asList());
         }
 
         //Map Diagnostic Context (all kv pairs)

@@ -59,12 +59,7 @@ public abstract class LogStashEvent {
      */
     protected String type = null;
 
-    @JsonProperty("@source")
-    public String getSource() {
-        return source;
-    }
-
-    protected void setSource(String source) {
+   protected void setSource(String source) {
         this.source = source;
     }
 
@@ -129,11 +124,6 @@ public abstract class LogStashEvent {
 
     protected void setMessage(String message) {
         this.message = message;
-    }
-
-    @JsonProperty("@type")
-    public String getType() {
-        return type;
     }
 
     protected void setType(String type) {

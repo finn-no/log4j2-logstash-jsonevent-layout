@@ -3,10 +3,9 @@ description = 'Log4J2 Layout for outputting LogStash json_event format'
 apply plugin: 'java'
 apply plugin: 'maven'
 
-def localMavenRepo = "file:///localhost/home/firojoha/.m2/repository/"
 repositories {
     mavenCentral()
-    mavenRepo urls: localMavenRepo
+    mavenLocal()
 }
 version = "0.1.2-FINN"
 group = "no.finntech.log4j2"

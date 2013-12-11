@@ -120,7 +120,6 @@ public class LogStashEventJSONLayout extends AbstractStringLayout {
         logStashEventBuilder.setSourceHost(hostName);
         logStashEventBuilder.setSource(StringUtils.join(type,DELIM,hostName,DELIM,applicationName));
 
-        logStashEventBuilder.addField("source_address", localAddress);
     }
 
     protected String getLogStashType() {
@@ -129,11 +128,8 @@ public class LogStashEventJSONLayout extends AbstractStringLayout {
 
     protected void handleLogEvent(LogEvent event) {
         //Level
-        logStashEventBuilder.addField("logger_name", event.getLoggerName());
-        logStashEventBuilder.addField("thread_name", event.getThreadName());
         if (null != event.getLevel()) {
             logStashEventBuilder.addField("level", event.getLevel());
-            logStashEventBuilder.addField("level_value", event.getLevel().intLevel());
         }
 
         StackTraceElement stackTrace = event.getSource();
@@ -187,26 +183,9 @@ public class LogStashEventJSONLayout extends AbstractStringLayout {
             return;
         }
 
-        //Event Message Type
-        logStashEventBuilder.addField("message_type", message.getClass().getSimpleName());
-        //TODO special handling for different message types?
-
-        //Message Objects Parsing (each object) TODO
-
-        if(null != message.getParameters() && message.getParameters().length > 0) {
-            //TODO MessageObjectsHandler Here
-            logStashEventBuilder.addField("message_parameters", message.getParameters());
-        }
-
-        Throwable message_throwable = message.getThrowable();
-        if (null != message_throwable) {
-            logStashEventBuilder.addField("message_throwable", message_throwable);
-        }
-
         String message_formatted = message.getFormattedMessage();
         if (null !=message_formatted) {
             logStashEventBuilder.setMessage(message_formatted);
-            logStashEventBuilder.addField("message_formatted", message_formatted);
         }
     }
 

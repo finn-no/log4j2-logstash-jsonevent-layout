@@ -8,7 +8,7 @@ repositories {
     mavenCentral()
     mavenRepo urls: localMavenRepo
 }
-version = "0.1.1-FINN"
+version = "0.1.2-FINN"
 group = "no.finntech.log4j2"
 
 dependencies {

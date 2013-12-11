@@ -54,16 +54,9 @@ public class LogStashEventJSONLayoutIT {
     //TODO make that token replacement for layout.foo() component
     String simpleRoundTripJSON = "    {\n" +
             "      \"@fields\" : {\n" +
-            "        \"source_address\" : \"" + layout.getLocalhostAddress() + "\",\n" +
-            "        \"logger_name\" : \"net.logstash.logging.log4j2.core.layout.LogStashEventJSONLayoutIT\",\n" +
-            "        \"thread_name\" : \"Test worker\",\n" +
             "        \"level\" : \"DEBUG\",\n" +
-            "        \"level_value\" : 5,\n" +
-            "        \"ndc\" : [ ],\n" +
-            "        \"message_type\" : \"SimpleMessage\",\n" +
-            "        \"message_formatted\" : \"Test Message\"\n" +
+            "        \"ndc\" : [ ]\n" +
             "      },\n" +
-            "      \"@source_host\" : \"" + layout.getHostName() + "\",\n" +
             "      \"@timestamp\" : \"2013-06-30T09:22:12.322-07:00\",\n" +
             "      \"@message\" : \"Test Message\"\n" +
             "    }";

@@ -99,18 +99,8 @@ public abstract class LogStashEvent {
         this.timestamp = timestamp;
     }
 
-    @JsonProperty("@source_host")
-    public String getSource_host() {
-        return source_host;
-    }
-
     protected void setSource_host(String source_host) {
         this.source_host = source_host;
-    }
-
-    @JsonProperty("@source_path")
-    public String getSource_path() {
-        return source_path;
     }
 
     protected void setSource_path(String source_path) {

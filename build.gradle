@@ -8,7 +8,7 @@ description = 'Log4J2 Layout for outputting LogStash json_event format'
 apply plugin: 'java'
 apply plugin: 'maven'
 
-version='3.0.0-finn-0-SNAPSHOT'
+version='3.0.0-finn-2'
 group = 'net.logstash.log4j2'
 
 buildscript {

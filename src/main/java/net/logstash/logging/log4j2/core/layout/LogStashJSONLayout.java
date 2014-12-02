@@ -25,7 +25,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Map.Entry;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
@@ -141,6 +142,7 @@ import org.apache.logging.log4j.message.MultiformatMessage;
  * excludeLevel If "true" excludes level element, defaults to false;
  * excludeThread If "true" excludes thread element, defaults to false;
  * excludeMessage If "true" excludes message element, defaults to false;
+ * excludeLog If "true" excludes log element, defaults to false;
  * excludeNDC If "true" excludes context stack aka NDC element, defaults to false;
  * excludeThrown If "true" excludes logger element, defaults to false;
  * skipJsonEscapeSubLayout If "true" doesn't escape product of layout,
@@ -154,7 +156,7 @@ import org.apache.logging.log4j.message.MultiformatMessage;
  *
  * </p>
  *
- * Code here derived from Apache's log4j2 JSONLayout {@link org.apache.logging.log4j.core.layout.JSONLayout}
+ * Code here derived from Apache's log4j2 JsonLayout {@link org.apache.logging.log4j.core.layout.JsonLayout}
  * and all licensing is carried forward.
  *
  * @author jeremyfranklin-ross
@@ -194,6 +196,7 @@ public class LogStashJSONLayout extends AbstractStringLayout {
     private final boolean excludeLevel;
     private final boolean excludeThread;
     private final boolean excludeMessage;
+    private final boolean excludeLog;
     private final boolean excludeNDC;
     private final boolean excludeThrown;
 
@@ -219,6 +222,7 @@ public class LogStashJSONLayout extends AbstractStringLayout {
 			final boolean excludeLevel,
 			final boolean excludeThread,
 			final boolean excludeMessage,
+			final boolean excludeLog,
 			final boolean excludeNDC,
 			final boolean excludeThrown,
 			final boolean jsonEscapeSubLayout,
@@ -266,6 +270,7 @@ public class LogStashJSONLayout extends AbstractStringLayout {
         this.excludeLevel = excludeLevel;
         this.excludeThread = excludeThread;
         this.excludeMessage = excludeMessage;
+        this.excludeLog = excludeLog;
         this.excludeNDC = excludeNDC;
         this.excludeThrown = excludeThrown;
         if (subLayoutAsElement) {
@@ -387,9 +392,25 @@ public class LogStashJSONLayout extends AbstractStringLayout {
         if (!excludeNDC && event.getContextStack().getDepth() > 0) {
             buf.append(COMMA);
             buf.append(this.eol);
-            buf.append("\"ndc\":");
-            buf.append(Transform.escapeJsonControlCharacters(event.getContextStack().toString()));
+            buf.append(this.indent2);
+            buf.append("\"ndc\":[");
+            final ListIterator<String> ndc = event.getContextStack().asList().listIterator();
+            buf.append(this.eol);
+            buf.append(this.indent3);
             buf.append("\"");
+            buf.append(Transform.escapeJsonControlCharacters(ndc.next()));
+            buf.append("\"");
+            while (ndc.hasNext()) {
+                buf.append(COMMA);
+                buf.append(this.eol);
+                buf.append(this.indent3);
+                buf.append("\"");
+                buf.append(Transform.escapeJsonControlCharacters(ndc.next()));
+                buf.append("\"");
+            }
+            buf.append(this.eol);
+            buf.append(this.indent2);
+            buf.append("]");
         }
 
         //Thrown
@@ -446,48 +467,56 @@ public class LogStashJSONLayout extends AbstractStringLayout {
             buf.append(this.indent2);
             buf.append("\"Properties\":{");
             buf.append(this.eol);
-            final Set<Entry<String, String>> entrySet = event.getContextMap().entrySet();
-            int i = 1;
-            for (final Map.Entry<String, String> entry : entrySet) {
+            final Iterator<Entry<String,String>> entrySet = event.getContextMap().entrySet().iterator();
+            Map.Entry<String, String> entry = entrySet.next();
+            buf.append(this.indent3);
+            buf.append("\"");
+            buf.append(Transform.escapeJsonControlCharacters(entry.getKey()));
+            buf.append("\":\"");
+            buf.append(Transform.escapeJsonControlCharacters(String.valueOf(entry.getValue())));
+            buf.append("\"");
+
+            while(entrySet.hasNext()) {
+                entry = entrySet.next();
+                buf.append(COMMA);
+                buf.append(this.eol);
                 buf.append(this.indent3);
                 buf.append("\"");
                 buf.append(Transform.escapeJsonControlCharacters(entry.getKey()));
                 buf.append("\":\"");
                 buf.append(Transform.escapeJsonControlCharacters(String.valueOf(entry.getValue())));
                 buf.append("\"");
-                if (i < entrySet.size()) {
-                    buf.append(COMMA);
-                }
-                buf.append(this.eol);
-                i++;
             }
+            buf.append(this.eol);
             buf.append(this.indent2);
             buf.append("}");
         }
 
         //Log (the sublayout)
-        buf.append(COMMA);
-        buf.append(this.eol);
-        buf.append(this.indent2);
-        buf.append("\"log\":");
-        buf.append(this.subLayoutBegin);
+        if (!excludeLog) {
+            buf.append(COMMA);
+            buf.append(this.eol);
+            buf.append(this.indent2);
+            buf.append("\"log\":");
+            buf.append(this.subLayoutBegin);
 
-        if (jsonEscapeSubLayout) {
-        	Serializable serializedLayoutProduct = subLayout.toSerializable(event);
-	        if (serializedLayoutProduct instanceof CharSequence) {
-	        	buf.append(Transform.escapeJsonControlCharacters(serializedLayoutProduct.toString()));
-	        } else {
-	        	buf.append(Transform.escapeJsonControlCharacters(new String(subLayout.toByteArray(event), this.getCharset())));
-	        }
-        } else {
-        	Serializable serializedLayoutProduct = subLayout.toSerializable(event);
-	        if (serializedLayoutProduct instanceof CharSequence) {
-	        	buf.append(serializedLayoutProduct.toString());
-	        } else {
-	        	buf.append(new String(subLayout.toByteArray(event), this.getCharset()));
-	        }
+            if (jsonEscapeSubLayout) {
+                Serializable serializedLayoutProduct = subLayout.toSerializable(event);
+                if (serializedLayoutProduct instanceof CharSequence) {
+                    buf.append(Transform.escapeJsonControlCharacters(serializedLayoutProduct.toString()));
+                } else {
+                    buf.append(Transform.escapeJsonControlCharacters(new String(subLayout.toByteArray(event), this.getCharset())));
+                }
+            } else {
+                Serializable serializedLayoutProduct = subLayout.toSerializable(event);
+                if (serializedLayoutProduct instanceof CharSequence) {
+                    buf.append(serializedLayoutProduct.toString());
+                } else {
+                    buf.append(new String(subLayout.toByteArray(event), this.getCharset()));
+                }
+            }
+            buf.append(this.subLayoutEnd);
         }
-        buf.append(this.subLayoutEnd);
 
         for (Entry<String,String> attributeEntry : additionalLogAttributes.entrySet()) {
             buf.append(COMMA);
@@ -578,12 +607,13 @@ public class LogStashJSONLayout extends AbstractStringLayout {
      * @param excludeLevelStr If "true" excludes level element, defaults to false;
      * @param excludeThreadStr If "true" excludes thread element, defaults to false;
      * @param excludeMessageStr If "true" excludes message element, defaults to false;
+     * @param excludeLogStr If "true" excludes log element, defaults to false;
      * @param excludeNDCStr If "true" excludes context stack aka NDC element, defaults to false;
      * @param excludeThrownStr If "true" excludes logger element, defaults to false;
      * @param skipJsonEscapeSubLayoutStr If "true" doesn't escape product of layout,
      * 			only use if layout already produces escaped string. Defaults to false;
      *  		Setting subLayoutAsElement to true implies skipJsonEscapeSubLayoutStr is "true" and overrides contradiction.
-     * @param subLayoutAsElement If "true" doesn't escape product of layout and assumes product will be an element bracketed with curly braces,
+     * @param subLayoutAsElementStr If "true" doesn't escape product of layout and assumes product will be an element bracketed with curly braces,
      * 			only use if layout already produces escaped string. Defaults to false;
      *  		Setting to true implies skipJsonEscapeSubLayoutStr is "true" and overrides contradiction.
      * @param subLayout If omitted uses default pattern layout
@@ -603,7 +633,9 @@ public class LogStashJSONLayout extends AbstractStringLayout {
             @PluginAttribute("excludeLogger") final String excludeLoggerStr,
             @PluginAttribute("excludeLevel") final String excludeLevelStr,
             @PluginAttribute("excludeThread") final String excludeThreadStr,
+
             @PluginAttribute("excludeMessage") final String excludeMessageStr,
+            @PluginAttribute("excludeLog") final String excludeLogStr,
 
             @PluginAttribute("excludeNDC") final String excludeNDCStr,
             @PluginAttribute("excludeThrown") final String excludeThrownStr,
@@ -631,6 +663,8 @@ public class LogStashJSONLayout extends AbstractStringLayout {
         final boolean excludeLevel = Boolean.parseBoolean(excludeLevelStr);
         final boolean excludeThread = Boolean.parseBoolean(excludeThreadStr);
         final boolean excludeMessage = Boolean.parseBoolean(excludeMessageStr);
+        final boolean excludeLog = Boolean.parseBoolean(excludeLogStr);
+
         final boolean excludeNDC = Boolean.parseBoolean(excludeNDCStr);
 		final boolean excludeThrown = Boolean.parseBoolean(excludeThrownStr);
         final boolean jsonEscapeSubLayout = !Boolean.parseBoolean(skipJsonEscapeSubLayoutStr);
@@ -691,7 +725,11 @@ public class LogStashJSONLayout extends AbstractStringLayout {
         return new LogStashJSONLayout(info, props, complete,
         		compact, newline, commaAtEventEnd,
         		charset,
-        		excludeLogger, excludeLevel, excludeThread, excludeMessage,
+        		excludeLogger,
+                excludeLevel,
+                excludeThread,
+                excludeMessage,
+                excludeLog,
     			excludeNDC,
     			excludeThrown,
         		jsonEscapeSubLayout,

@@ -4,6 +4,7 @@ build
 .classpath
 .project
 test-output
+/.nb-gradle/private/
 gradle.properties
 /bin
 gradle.properties.off

@@ -42,7 +42,7 @@ import org.apache.logging.log4j.core.util.Transform;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.MultiformatMessage;
 
-import static org.apache.logging.log4j.core.util.Constants.UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Appends a series of JSON events as strings serialized as bytes.

@@ -7,7 +7,7 @@ description = 'Log4J2 Layout for outputting LogStash json_event format'
 
 apply plugin: 'java'
 
-version='3.1.2-SNAPSHOT'
+version='3.1.1-finn-2'
 group = 'net.logstash.log4j2'
 
 buildscript {
@@ -62,7 +62,7 @@ publishing {
 
 dependencies {
 
-    def log4j2Version = '2.3+';
+    def log4j2Version = '2.4+';
     compile "org.apache.logging.log4j:log4j-api:$log4j2Version"
     compile "org.apache.logging.log4j:log4j-core:$log4j2Version"
 

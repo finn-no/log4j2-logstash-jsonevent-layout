@@ -388,7 +388,7 @@ public class LogStashJSONLayout extends AbstractStringLayout {
         }
 
         //NDC
-        if (!excludeNDC && event.getContextStack().getDepth() > 0) {
+        if (!excludeNDC && event.getContextStack() != null && event.getContextStack().getDepth() > 0) {
             buf.append(COMMA);
             buf.append(this.eol);
             buf.append(this.indent2);
